@@ -40,6 +40,16 @@ func createBook(w ResponseWriter, request *Request) {
 
 func getBook(w ResponseWriter, request *Request) {
 	values, err := url.ParseQuery(request.URL.RawQuery)
+	limit := values.Get("limit")
+	offset := values.Get("offset")
+	id := values.Get("id")
+	title := values.Get("title")
+	if(len(offset) == 0){
+		offset = 0
+	}
+	if (len(limit) == 0){
+		limit = 10
+	}
 	if err != nil {
 		panic(err)
 	}
@@ -47,7 +57,7 @@ func getBook(w ResponseWriter, request *Request) {
 	if (len(values) == 0) {
 		json.NewEncoder(w).Encode(library)
 	} else {
-
+		json.NewEncoder(w).Encode(library[offset:limit])
 	}
 }
 
