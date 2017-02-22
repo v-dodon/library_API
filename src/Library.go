@@ -1,11 +1,12 @@
 package main
 
 import (
-	"net/http"
-	//"io/ioutil"
+	. "net/http"
+	"strconv"
 	"encoding/json"
 	"strings"
 	"net/url"
+	"github.com/gorilla/mux"
 )
 
 type Book struct {
@@ -15,47 +16,109 @@ type Book struct {
 
 var library []Book
 
-func createBook(w http.ResponseWriter, request *http.Request) {
+func createBook(w ResponseWriter, request *Request) {
 	decoder := json.NewDecoder(request.Body)
 	var book Book
 	err := request.ParseForm()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		Error(w, err.Error(), StatusInternalServerError)
 		return
 	}
 	decodeError := decoder.Decode(&book)
 	if decodeError != nil {
-		http.Error(w, decodeError.Error(), http.StatusInternalServerError)
+		Error(w, decodeError.Error(), StatusInternalServerError)
 		return
 	}
 	if (strings.TrimSpace(book.Title) == "") {
-		http.Error(w, "The title param is missing from the body", http.StatusBadRequest)
+		Error(w, "The title param is missing from the body", StatusBadRequest)
 		return
 	}
 	book.Id = len(library)
 	library = append(library, book)
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(StatusCreated)
 }
 
-func getBook(w http.ResponseWriter, request *http.Request) {
-	_, err := url.ParseQuery(request.URL.RawQuery)
+func getBook(w ResponseWriter, request *Request) {
+	values, err := url.ParseQuery(request.URL.RawQuery)
 	if err != nil {
 		panic(err)
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(library)
+	if (len(values) == 0) {
+		json.NewEncoder(w).Encode(library)
+	} else {
+
+	}
+}
+
+func updateBook(w ResponseWriter, request *Request) {
+	urlParams := mux.Vars(request)
+	var bookFromRequest Book
+	decoder := json.NewDecoder(request.Body)
+	err := request.ParseForm()
+	if err != nil {
+		Error(w, err.Error(), StatusInternalServerError)
+		return
+	}
+	decodeError := decoder.Decode(&bookFromRequest)
+
+	if decodeError != nil {
+		Error(w, decodeError.Error(), StatusInternalServerError)
+		return
+	}
+	id, err := strconv.Atoi(urlParams["id"])
+	if (err != nil) {
+		Error(w, err.Error(), StatusBadRequest)
+		return
+	}
+	for index, _ := range library {
+		if library[index].Id == id {
+			bookFromRequest.Id = id
+			library[index] = bookFromRequest
+			break
+		}
+	}
+	w.WriteHeader(StatusOK)
+}
+
+func deleteBook(w ResponseWriter, request *Request) {
+	urlParams := mux.Vars(request)
+	id, err := strconv.Atoi(urlParams["id"])
+	if (err != nil) {
+		Error(w, err.Error(), StatusBadRequest)
+		return
+	}
+	for index, _ := range library {
+		if library[index].Id == id {
+			library = append(library[:index], library[index + 1:]...)
+			break
+		}
+	}
+	w.WriteHeader(StatusOK)
 }
 
 func main() {
-	http.HandleFunc("/book", func(w http.ResponseWriter, request *http.Request) {
+	gorillaRoute := mux.NewRouter()
+	gorillaRoute.HandleFunc("/book", func(w ResponseWriter, request *Request) {
 		switch request.Method {
 
-		case "POST":
+		case MethodPost:
 			createBook(w, request)
-		case "GET":
+		case MethodGet:
 			getBook(w, request)
 
 		}
 	})
-	http.ListenAndServe(":8080", nil)
+	gorillaRoute.HandleFunc("/book/{id:[0-9]+}", func(w ResponseWriter, request *Request) {
+		switch request.Method {
+
+		case MethodPut:
+			updateBook(w, request)
+		case MethodDelete:
+			deleteBook(w, request)
+
+		}
+	})
+	Handle("/", gorillaRoute)
+	ListenAndServe(":8080", nil)
 }
