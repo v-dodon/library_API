@@ -2,7 +2,7 @@ package main
 
 import (
 	. "net/http"
-	"strconv"
+	. "strconv"
 	"encoding/json"
 	"strings"
 	"net/url"
@@ -15,6 +15,9 @@ type Book struct {
 }
 
 var library []Book
+
+var LIMIT = "10"
+var OFFSET = "0"
 
 func createBook(w ResponseWriter, request *Request) {
 	decoder := json.NewDecoder(request.Body)
@@ -40,15 +43,38 @@ func createBook(w ResponseWriter, request *Request) {
 
 func getBook(w ResponseWriter, request *Request) {
 	values, err := url.ParseQuery(request.URL.RawQuery)
-	limit := values.Get("limit")
-	offset := values.Get("offset")
-	id := values.Get("id")
-	title := values.Get("title")
-	if(len(offset) == 0){
-		offset = 0
+	var limit int
+	var offset int
+	var id int
+	limitQuery := values.Get("limit")
+	offsetQuery := values.Get("offset")
+	idQuery := values.Get("id")
+	if (len(idQuery) > 0) {
+		id, err = Atoi(idQuery)
+		if (err != nil) {
+			Error(w, err.Error(), StatusBadRequest)
+			return
+		}
 	}
-	if (len(limit) == 0){
-		limit = 10
+
+	title := values.Get("title")
+	if (len(offsetQuery) == 0) {
+		offset, err = Atoi(OFFSET)
+	}else{
+		offset, _ = Atoi(offsetQuery)
+		if (err != nil) {
+			Error(w, err.Error(), StatusBadRequest)
+			return
+		}
+	}
+	if (len(limitQuery) == 0) {
+		limit, _ = Atoi(LIMIT)
+	}else{
+		limit, _ = Atoi(limitQuery)
+		if (err != nil) {
+			Error(w, err.Error(), StatusBadRequest)
+			return
+		}
 	}
 	if err != nil {
 		panic(err)
@@ -56,6 +82,14 @@ func getBook(w ResponseWriter, request *Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if (len(values) == 0) {
 		json.NewEncoder(w).Encode(library)
+	} else if (len(idQuery) != 0 || len(title) != 0) {
+		for _, element := range library {
+			if (element.Id == id || element.Title == title) {
+				json.NewEncoder(w).Encode(element)
+				w.WriteHeader(StatusOK)
+				return
+			}
+		}
 	} else {
 		json.NewEncoder(w).Encode(library[offset:limit])
 	}
@@ -76,7 +110,7 @@ func updateBook(w ResponseWriter, request *Request) {
 		Error(w, decodeError.Error(), StatusInternalServerError)
 		return
 	}
-	id, err := strconv.Atoi(urlParams["id"])
+	id, err := Atoi(urlParams["id"])
 	if (err != nil) {
 		Error(w, err.Error(), StatusBadRequest)
 		return
@@ -93,7 +127,7 @@ func updateBook(w ResponseWriter, request *Request) {
 
 func deleteBook(w ResponseWriter, request *Request) {
 	urlParams := mux.Vars(request)
-	id, err := strconv.Atoi(urlParams["id"])
+	id, err := Atoi(urlParams["id"])
 	if (err != nil) {
 		Error(w, err.Error(), StatusBadRequest)
 		return
