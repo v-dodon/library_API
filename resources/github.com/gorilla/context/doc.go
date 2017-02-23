@@ -5,11 +5,11 @@
 /*
 Package context stores values shared during a request lifetime.
 
-Note: github.com.gorilla/context, having been born well before `context.Context` existed,
+Note: github.com.github.com.github.com.gorilla/context, having been born well before `context.Context` existed,
 does not play well > with the shallow copying of the request that
 [`http.Request.WithContext`](https://golang.org/pkg/net/http/#Request.WithContext)
 (added to net/http Go 1.7 onwards) performs. You should either use *just*
-github.com.gorilla/context, or moving forward, the new `http.Request.Context()`.
+github.com.github.com.github.com.gorilla/context, or moving forward, the new `http.Request.Context()`.
 
 For example, a router can set variables extracted from the URL and later
 application handlers can access those values, or it can be used to store
@@ -27,7 +27,7 @@ Here we define a key using a custom int type to avoid name collisions:
 	package foo
 
 	import (
-		"github.com/github.com.gorilla/context"
+		"github.com/github.com.github.com.github.com.gorilla/context"
 	)
 
 	type key int
@@ -82,7 +82,7 @@ served. Just call Clear() passing the request:
 ...or use ClearHandler(), which conveniently wraps an http.Handler to clear
 variables at the end of a request lifetime.
 
-The Routers from the packages github.com.gorilla/mux and github.com.gorilla/pat call Clear()
+The Routers from the packages github.com.github.com.github.com.gorilla/mux and github.com.github.com.github.com.gorilla/pat call Clear()
 so if you are using either of them you don't need to clear the context manually.
 */
 package context

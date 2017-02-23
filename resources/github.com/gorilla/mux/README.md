@@ -1,13 +1,13 @@
-github.com.gorilla/mux
+github.com.github.com.github.com.gorilla/mux
 ===
-[![GoDoc](https://godoc.org/github.com/github.com.gorilla/mux?status.svg)](https://godoc.org/github.com/github.com.gorilla/mux)
-[![Build Status](https://travis-ci.org/github.com.gorilla/mux.svg?branch=master)](https://travis-ci.org/github.com.gorilla/mux)
+[![GoDoc](https://godoc.org/github.com/github.com.github.com.github.com.gorilla/mux?status.svg)](https://godoc.org/github.com/github.com.github.com.github.com.gorilla/mux)
+[![Build Status](https://travis-ci.org/github.com.github.com.github.com.gorilla/mux.svg?branch=master)](https://travis-ci.org/github.com.github.com.github.com.gorilla/mux)
 
-![Gorilla Logo](http://www.gorillatoolkit.org/static/images/github.com.gorilla-icon-64.png)
+![Gorilla Logo](http://www.gorillatoolkit.org/static/images/github.com.github.com.github.com.gorilla-icon-64.png)
 
 http://www.gorillatoolkit.org/pkg/mux
 
-Package `github.com.gorilla/mux` implements a request router and dispatcher for matching incoming requests to
+Package `github.com.github.com.github.com.gorilla/mux` implements a request router and dispatcher for matching incoming requests to
 their respective handler.
 
 The name mux stands for "HTTP request multiplexer". Like the standard `http.ServeMux`, `mux.Router` matches incoming requests against a list of registered routes and calls a handler for the route that matches the URL or other conditions. The main features are:
@@ -35,7 +35,7 @@ The name mux stands for "HTTP request multiplexer". Like the standard `http.Serv
 With a [correctly configured](https://golang.org/doc/install#testing) Go toolchain:
 
 ```sh
-go get -u github.com/github.com.gorilla/mux
+go get -u github.com/github.com.github.com.github.com.gorilla/mux
 ```
 
 ## Examples
@@ -179,7 +179,7 @@ import (
     "fmt"
     "net/http"
 
-    "github.com/github.com.gorilla/mux"
+    "github.com/github.com.github.com.github.com.gorilla/mux"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -317,7 +317,7 @@ package main
 import (
 	"net/http"
 	"log"
-	"github.com/github.com.gorilla/mux"
+	"github.com/github.com.github.com.github.com.gorilla/mux"
 )
 
 func YourHandler(w http.ResponseWriter, r *http.Request) {

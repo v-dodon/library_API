@@ -16,10 +16,10 @@ type Book struct {
 
 var library []Book
 
-var LIMIT = "10"
-var OFFSET = "0"
+var limitConst = "10"
+var offsetConst = "0"
 
-func createBook(w ResponseWriter, request *Request) {
+func CreateBook(w ResponseWriter, request *Request) {
 	decoder := json.NewDecoder(request.Body)
 	var book Book
 	err := request.ParseForm()
@@ -41,7 +41,12 @@ func createBook(w ResponseWriter, request *Request) {
 	w.WriteHeader(StatusCreated)
 }
 
-func getBook(w ResponseWriter, request *Request) {
+func GetBook(w ResponseWriter, request *Request) {
+	if (len(library) == 0) {
+		Error(w, "There are no books", StatusNotFound)
+		return
+	}
+	var found bool
 	values, err := url.ParseQuery(request.URL.RawQuery)
 	var limit int
 	var offset int
@@ -59,8 +64,8 @@ func getBook(w ResponseWriter, request *Request) {
 
 	title := values.Get("title")
 	if (len(offsetQuery) == 0) {
-		offset, err = Atoi(OFFSET)
-	}else{
+		offset, err = Atoi(offsetConst)
+	} else {
 		offset, _ = Atoi(offsetQuery)
 		if (err != nil) {
 			Error(w, err.Error(), StatusBadRequest)
@@ -68,8 +73,8 @@ func getBook(w ResponseWriter, request *Request) {
 		}
 	}
 	if (len(limitQuery) == 0) {
-		limit, _ = Atoi(LIMIT)
-	}else{
+		limit, _ = Atoi(limitConst)
+	} else {
 		limit, _ = Atoi(limitQuery)
 		if (err != nil) {
 			Error(w, err.Error(), StatusBadRequest)
@@ -87,17 +92,28 @@ func getBook(w ResponseWriter, request *Request) {
 			if (element.Id == id || element.Title == title) {
 				json.NewEncoder(w).Encode(element)
 				w.WriteHeader(StatusOK)
+				found = true
 				return
 			}
 		}
+		if (!found) {
+			Error(w, "Not found book with id: " + Itoa(id), StatusNotFound)
+			return
+		}
 	} else {
-		json.NewEncoder(w).Encode(library[offset:limit])
+		if (limit + offset > len(library)) {
+			json.NewEncoder(w).Encode(library[offset:len(library)])
+		} else {
+			json.NewEncoder(w).Encode(library[offset:limit + offset])
+		}
+
 	}
 }
 
-func updateBook(w ResponseWriter, request *Request) {
+func UpdateBook(w ResponseWriter, request *Request) {
 	urlParams := mux.Vars(request)
 	var bookFromRequest Book
+	var found bool
 	decoder := json.NewDecoder(request.Body)
 	err := request.ParseForm()
 	if err != nil {
@@ -119,13 +135,19 @@ func updateBook(w ResponseWriter, request *Request) {
 		if library[index].Id == id {
 			bookFromRequest.Id = id
 			library[index] = bookFromRequest
+			found = true
 			break
 		}
+	}
+	if (!found) {
+		Error(w, "Not found book with id: " + Itoa(id), StatusNotFound)
+		return
 	}
 	w.WriteHeader(StatusOK)
 }
 
-func deleteBook(w ResponseWriter, request *Request) {
+func DeleteBook(w ResponseWriter, request *Request) {
+	var found bool
 	urlParams := mux.Vars(request)
 	id, err := Atoi(urlParams["id"])
 	if (err != nil) {
@@ -136,7 +158,12 @@ func deleteBook(w ResponseWriter, request *Request) {
 		if library[index].Id == id {
 			library = append(library[:index], library[index + 1:]...)
 			break
+			found = true
 		}
+	}
+	if (!found) {
+		Error(w, "Not found book with id: " + Itoa(id), StatusNotFound)
+		return
 	}
 	w.WriteHeader(StatusOK)
 }
@@ -147,9 +174,9 @@ func main() {
 		switch request.Method {
 
 		case MethodPost:
-			createBook(w, request)
+			CreateBook(w, request)
 		case MethodGet:
-			getBook(w, request)
+			GetBook(w, request)
 
 		}
 	})
@@ -157,9 +184,9 @@ func main() {
 		switch request.Method {
 
 		case MethodPut:
-			updateBook(w, request)
+			UpdateBook(w, request)
 		case MethodDelete:
-			deleteBook(w, request)
+			DeleteBook(w, request)
 
 		}
 	})

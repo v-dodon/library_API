@@ -3,7 +3,7 @@
   <component name="GoLibraries">
     <option name="urls">
       <list>
-        <option value="file://$PROJECT_DIR$/src/github.com" />
+        <option value="file://$PROJECT_DIR$/src/library" />
       </list>
     </option>
   </component>
